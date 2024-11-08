@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using QuanLyResort.Connection; 
 using Serilog;
+using QuanLyResort.DTOs.BookingDTOs;
 
 namespace QuanLyResort
 {
@@ -27,6 +28,9 @@ namespace QuanLyResort
             builder.Services.AddScoped<ImageRepository>();
             builder.Services.AddScoped<ImageServicesRepository>();
             builder.Services.AddScoped<ServicesRepository>();
+            builder.Services.AddSingleton<ReservationRepository, ReservationRepository>(); // Đảm bảo repository đã được đăng ký
+            builder.Services.AddHostedService<ExpireReservationsBackgroundService>();
+
 
             // Cấu hình CORS
             builder.Services.AddCors(options =>

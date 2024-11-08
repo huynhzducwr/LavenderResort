@@ -1,0 +1,326 @@
+﻿* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: white;
+    color: #333;
+}
+
+.checkout-container {
+    display: flex;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: auto;
+}
+
+.checkout-left {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: white;
+    border-right: 1px solid #ccc;
+}
+
+.checkout-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 8px;
+        height: 50px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+
+    .form-group.row {
+        display: flex;
+        justify-content: space-between;
+    }
+
+        .form-group.row .col {
+            width: 48%;
+        }
+
+.payment-methods {
+    margin-top: 20px;
+}
+
+    .payment-methods label {
+        font-size: 16px;
+        display: block;
+        margin-bottom: 10px;
+    }
+
+.payment-section {
+    margin-top: 20px;
+}
+
+
+
+.paypal-btn {
+    width: 560px; /* Chiều rộng của nút */
+    height: 50px; /* Chiều cao của nút */
+    font-weight: 600;
+    cursor: pointer; /* Con trỏ tay khi hover */
+    color: white;
+    display: inline-block; /* Đảm bảo button có thể căn chỉnh tốt */
+    border-radius: 30px; /* Thêm góc bo tròn cho nút (nếu cần) */
+    background-color: black;
+}
+
+    /* Hover effect (nếu có) */
+    .paypal-btn:hover {
+        opacity: 0.9; /* Hiệu ứng khi hover */
+        cursor: pointer;
+    }
+
+
+.checkout-right {
+    width: 50%;
+    background: #f5f5f5;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+/* Product Item */
+.product-item {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 10px;
+}
+
+/* Product Image */
+.product-img {
+    width: 80px;
+    height: 80px;
+    margin-right: 15px;
+}
+
+    .product-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+
+/* Product Quantity */
+.product-quantity {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    padding: 5px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+/* Product Description */
+.product-description {
+    flex-grow: 1;
+}
+
+.product-name {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.product-size,
+.product-color,
+.product-price {
+    font-size: 14px;
+    color: #555;
+}
+
+/* Total Price Section */
+.total-price {
+    margin-top: 20px;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 10px;
+    display: flex;
+    justify-content: flex-end; /* Aligns the content to the right */
+}
+
+    .total-price p {
+        font-weight: bold;
+        font-size: 18px;
+        margin-bottom: 5px;
+        white-space: nowrap; /* Prevents line break */
+    }
+
+
+.price-value {
+    font-size: 20px;
+    font-weight: bold;
+    color: #555;
+    text-align: right; /* Align the text inside to the right */
+    width: 100%; /* Ensure it takes full width of the parent */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .checkout-right {
+        width: 100%;
+        padding: 15px;
+    }
+
+    .product-item {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .product-img {
+        width: 100px;
+        height: 100px;
+        margin-bottom: 15px;
+    }
+
+    .product-description {
+        text-align: center;
+    }
+}
+
+
+.contact-section,
+.delivery-section {
+    margin-bottom: 20px;
+}
+
+    .contact-section input, .delivery-section input {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+.privacy-policy {
+    margin-top: 10px;
+}
+
+    .privacy-policy label {
+        font-size: 14px;
+    }
+
+    .privacy-policy input {
+        margin-right: 10px;
+    }
+
+
+/* Khung chứa logo */
+.logo {
+    font-size: 30px;
+    font-weight: bold;
+    color: #333; /* Màu chữ */
+    padding: 10px 20px;
+    background-color: white;
+    display: inline-block;
+    width: 100%;
+    padding-left: 218px;
+    border-radius: 5px;
+    text-transform: uppercase; /* Chữ in hoa */
+    border: 5px solid transparent; /* Viền mặc định là trong suốt */
+    transition: all 0.3s ease; /* Thêm hiệu ứng chuyển động mượt mà */
+    border-bottom: 1px solid #ccc; /* Border only at the bottom */
+}
+
+/* Discount Code Section */
+.discount-code {
+    display: flex;
+    align-items: center; /* Align items vertically center */
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+
+
+    .discount-code input {
+        padding: 10px;
+        margin-right: 10px;
+        height: 50px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 77%;
+    }
+
+    .discount-code .apply-btn {
+        padding: 10px 15px;
+        background-color: #9d9d9ddf;
+        color: white;
+        font-weight: bold;
+        border: none;
+        width: 100px;
+        font-size: 15px;
+        height: 40px;
+        border-radius: 20px;
+        cursor: pointer;
+    }
+
+        .discount-code .apply-btn:hover {
+            background-color: black;
+        }
+
+
+/* Hover effect cho logo */
+.logo:hover {
+    cursor: pointer;
+}
+
+
+
+
+/*đâsdasdsadas*/
+
+.available-discounts {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* Styling each discount item */
+.discount-item {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+    /* Styling the discount details inside each item */
+    .discount-item p {
+        margin: 0;
+        font-size: 14px;
+        color: #333;
+    }
+
+        /* Highlighting the discount percentage */
+        .discount-item p:nth-child(2) {
+            font-weight: bold;
+            color: #e74c3c; /* Red for discount */
+        }

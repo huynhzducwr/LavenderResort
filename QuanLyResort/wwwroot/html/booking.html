@@ -8,6 +8,8 @@
 
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 
 </head>
@@ -95,17 +97,18 @@
 
         </div>
 
-
+  
 
         <!-- Biểu mẫu đặt phòng -->
         <div class="booking-form">
             <h2>Book Your Stay</h2>
             <form id="reservationForm">
-                <label for="checkin">Check-in Date</label>
-                <input type="date" id="checkin" name="checkin">
+                <label for="checkin">Check-in Date & Time</label>
+                <input type="datetime-local" id="checkin" name="checkin">
 
-                <label for="checkout">Check-out Date</label>
-                <input type="date" id="checkout" name="checkout">
+                <label for="checkout">Check-out Date & Time</label>
+                <input type="datetime-local" id="checkout" name="checkout">
+
 
                 <div class="guest-selection-container">
                     <div class="guest-selection">
@@ -165,6 +168,7 @@
                     <strong>Success!</strong> <span id="success-message"></span>
                 </div>
                 <button type="submit">Tiếp tục</button>
+
             </form>
         </div>
 

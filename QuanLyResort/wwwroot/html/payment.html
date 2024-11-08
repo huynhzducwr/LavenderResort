@@ -1,0 +1,271 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head id="j_idt2">
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <title>Thanh toán hoá đơn</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="robots" content="all,follow">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="pragma" content="no-cache">
+    <link rel="stylesheet" href="https://xugiare.vn/public/faces/javax.faces.resource/material/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,700">
+    <link rel="stylesheet" href="https://xugiare.vn/public/faces/javax.faces.resource/material/css/style.default.css" id="theme-stylesheet">
+    <link rel="stylesheet" href="https://xugiare.vn/public/faces/javax.faces.resource/material/css/style-version=1.0.css">
+    <link rel="stylesheet" href="https://xugiare.vn/public/faces/javax.faces.resource/material/css/qr-code.css">
+    <link rel="stylesheet" href="https://xugiare.vn/public/faces/javax.faces.resource/material/css/qr-code-tablet.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link class="main-stylesheet" href="https://xugiare.vn/public/cute-alert/style.css" rel="stylesheet" type="text/css">
+    <script src="https://xugiare.vn/public/cute-alert/cute-alert.js"></script>
+    <script src="https://xugiare.vn/public/js/jquery-3.6.0.js"></script>
+    <style type="text/css">
+        .container-fluid {
+            width: 40% !important;
+            min-width: 750px !important;
+        }
+
+        .info-box {
+            min-height: 600px;
+        }
+
+        .entry {
+            border-bottom: 1px solid #424242;
+        }
+
+        .left {
+            background-color: #262626;
+        }
+
+        .receipt {
+            border-bottom: 1px solid #424242
+        }
+
+
+
+        /* Alert Box Styles */
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 20px;
+            background-color: #f44336; /* Red background */
+            color: white; /* White text */
+            border-radius: 5px;
+            z-index: 9999;
+            transition: opacity 0.6s, visibility 0.6s; /* Transition for fade effect */
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Close Button Styles */
+        .closebtn {
+            margin-left: 15px;
+            color: white;
+            font-weight: bold;
+            float: right;
+            font-size: 22px;
+            line-height: 20px;
+            cursor: pointer;
+        }
+
+            .closebtn:hover {
+                color: #bbb;
+            }
+
+        /* Fade Out Effect */
+        .alert.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+        /* Success Alert Box Styles */
+        .success {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 20px;
+            background-color: #4CAF50; /* Green background */
+            color: white; /* White text */
+            border-radius: 5px;
+            z-index: 9999;
+            transition: opacity 0.6s, visibility 0.6s; /* Transition for fade effect */
+            opacity: 1;
+            visibility: visible;
+        }
+
+            /* Fade Out Effect for Success Alert */
+            .success.fade-out {
+                opacity: 0;
+                visibility: hidden;
+            }
+    </style>
+</head>
+
+<body>
+    <div class="spinner" id="spinner" style="display: none;">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+    <div id="page" style="">
+        <nav class="navbar navbar-default hidden-xs">
+            <div class="container-fluid" style="padding: 1px;width: 45%;min-width: 800px;">
+                <div class="navbar-header" style="position: relative">
+                    <div class="col-xs-12 col-sm-12 col-md-12 text-right" style="padding-right: 0px;">
+                        <img src="https://xugiare.vn/public/faces/javax.faces.resource/images/hotline.svg" alt="logo-security" width="35">
+                        <span></span>
+                        <img src="https://xugiare.vn/public/faces/javax.faces.resource/images/email.svg" alt="logo-security" width="35">
+                        <a href="mailto:"><span></span></a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-4 left">
+                    <div class="info-box">
+                        <div class="entry">
+                            <p>
+                                <i class="fa fa-clock" aria-hidden="true"></i>
+                                <span style="padding-left: 5px;">Thời gian giữ phòng</span>
+                                <br>
+                                <span id="countdown_timer" style="padding-left: 25px;word-break: keep-all;color:orange;">Còn lại: 5:00</span>
+                            </p>
+                        </div>
+
+                        <div class="entry">
+                            <p>
+                                <i class="fa fa-university" aria-hidden="true"></i>
+                                <span style="padding-left: 5px;">Ngân hàng</span>
+                                <br>
+                                <span style="padding-left: 25px;word-break: keep-all;">Vietcombank</span>
+                            </p>
+                        </div>
+                        <div class="entry">
+                            <p>
+                                <i class="fa fa-credit-card" aria-hidden="true"></i>
+                                <span style="padding-left: 5px;">Số tài khoản</span>
+                                <br>
+                                <b id="copyStk" style="padding-left: 25px;word-break: keep-all;color:greenyellow;">1023105774</b>
+                                <i onclick="copy()" data-clipboard-target="#copyStk" class="fas fa-copy copy"></i>
+                            </p>
+                        </div>
+                        <div class="entry">
+                            <p>
+                                <i class="fa fa-user" aria-hidden="true"></i>
+                                <span style="padding-left: 5px;">Chủ tài khoản</span>
+                                <br>
+                                <span style="padding-left: 25px;word-break: keep-all;">Duong An</span>
+                            </p>
+                        </div>
+                        <div class="entry">
+                            <p>
+                                <i class="fa fa-money" aria-hidden="true"></i>
+                                <span style="padding-left: 5px;">Số tiền cần thanh toán</span>
+                                <br>
+                                <b id="totalAmount" style="padding-left: 25px;color:aqua;">...</b>
+                            </p>
+                        </div>
+                        <div class="entry">
+                            <p>
+                                <i class="fa fa-comment" aria-hidden="true"></i>
+                                <span style="padding-left: 5px;">Nội dung chuyển khoản</span>
+                                <br>
+                                <b id="copyNoiDung" style="padding-left: 25px;word-break: keep-all;color:yellow;">...</b>
+                                <i onclick="copy()" data-clipboard-target="#copyNoiDung" class="fas fa-copy copy"></i>
+                            </p>
+                        </div>
+                        <div class="entry">
+                            <p>
+                                <i class="fa fa-barcode" aria-hidden="true"></i>
+                                <span style="padding-left: 5px;">
+                                    Trạng thái <i class="fa fa-spinner fa-spin"></i>
+                                </span>
+                                <br>
+                                <span id="status_payment" style="padding-left: 25px;word-break: break-all;">
+                                    <!--<p class="mb-0 text-warning font-weight-bold d-flex justify-content-start align-items-center">
+                                        <small>
+                                            <svg class="mr-2" xmlns="http://www.w3.org/2000/svg" width="18" viewBox="0 0 24 24" fill="none">
+                                                <circle cx="12" cy="12" r="8" fill="#db7e06"></circle>
+                                            </svg>
+                                        </small>
+                                    </p>-->
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-sm-12 col-md-8 right">
+                    <div class="content">
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-12 col-md-12">
+                                <div class="qr-code">
+                                    <div class="payment-cta">
+                                        <div>
+                                            <h1>Quét mã QR để thanh toán</h1>
+                                        </div>
+                                        <a>Sử dụng <b>App Internet Banking</b> hoặc ứng dụng camera hỗ trợ QR code để quét mã</a>
+                                    </div>
+                                    <img id="qrCodeImage" src="" width="100%">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid hidden-xs">
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12">
+                    <div class="copyrights text-center">
+                        <p style="color: #737373; font-size: 11pt; font-weight: bold;">
+                            <br>Vui lòng thanh toán vào thông tin tài khoản trên để hệ thống xử lý hoá đơn tự động.
+                        </p>
+                        <a href="https://xugiare.vn/client/invoices">
+                            <i class="fa fa-arrow-left" aria-hidden="true"></i>
+                            <span>Quay lại</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="alert-box" class="alert" style="display: none;">
+        <span class="closebtn" onclick="closeAlert()">&times;</span>
+        <strong>Warning!</strong> <span id="alert-message"></span>
+    </div>
+    <div id="success-box" class="alert success" style="display: none;">
+        <span class="closebtn" onclick="closeSuccessAlert()">&times;</span>
+        <strong>Success!</strong> <span id="success-message"></span>
+    </div>
+    <script>
+        // Get parameters from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const totalAmount = urlParams.get('totalAmount');
+        const reservationID = urlParams.get('reservationID');
+
+        // Display total amount and reservation ID
+        document.getElementById('totalAmount').textContent = `${totalAmount}đ`;
+        document.getElementById('copyNoiDung').textContent = reservationID;
+
+        // Update QR Code URL with reservation details
+        const qrCodeImage = document.getElementById('qrCodeImage');
+        qrCodeImage.src = `https://api.vietqr.io/VCB/1023105774/${totalAmount}/${reservationID}/vietqr_net_2.jpg?accountName=Duong AN`;
+
+        function copy() {
+            cuteToast({
+                type: "success",
+                message: "Đã sao chép vào bộ nhớ tạm",
+                timer: 5000
+            });
+        }
+    </script>
+
+    <script src="/js/apithanhtoan.js"></script>
+</body>
+</html>

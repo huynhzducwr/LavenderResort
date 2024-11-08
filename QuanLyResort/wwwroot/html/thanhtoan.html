@@ -1,0 +1,133 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Lavender Resort</title>
+    <link rel="stylesheet" href="/CSS/styles.css">
+</head>
+<body>
+    <div class="logo">Lavender Resort</div>
+
+    <div class="checkout-container">
+        <div class="checkout-left">
+            <!-- Liên hệ -->
+            <!-- Ô điền email -->
+            <!-- Vận chuyển -->
+            <p class="checkout-title">Thông tin người đặt chỗ</p>
+
+
+            <!-- Ô nhập họ và ô nhập tên cùng 1 hàng -->
+            <div class="form-group row">
+                <div class="col">
+                    <input type="text" id="first-name" name="first-name" placeholder="Nhập họ" required>
+                </div>
+                <div class="col">
+                    <input type="text" id="last-name" name="last-name" placeholder="Nhập tên" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <input type="email" id="email" name="email" placeholder="Nhập email" required>
+            </div>
+
+            <!-- Ô nhập số điện thoại -->
+            <div class="form-group">
+                <input type="tel" id="phone" name="phone" placeholder="Nhập số điện thoại" required>
+            </div>
+
+
+
+            <p style="font-weight:bold">Phương thức thanh toán</p>
+            <!-- Lựa chọn phương thức thanh toán -->
+            <div class="payment-methods">
+
+                <label>
+                    <input type="radio" name="payment-method" value="3"> Thanh toán qua VietQR
+                </label>
+            </div>
+
+
+
+
+        </div>
+
+
+        <div class="checkout-right">
+            <div id="product-container">
+                <!-- Product Items -->
+
+                <div id="room-cart" class="room-cart">
+                    <div class="cart-wrapper">
+                        <div class="cart-container">
+                            <p class="title-room">Phòng 1</p>
+                            <p class="stay-dates">Thứ 3, tháng 11 05, 2024 — Thứ 5, tháng 11 07, 2024</p>
+
+                            <div class="room-details">
+                                <p>x1 Tên loại phòng — Giá: <span class="price-info">Price</span></p>
+                                <p>1 Người lớn</p>
+                            </div>
+                            <div class="total-info">
+                                <p class="total-price1">thuế phí: <span class="price-info1">GST</span></p>
+
+                                <p class="tax-info">(Bao gồm thuế phí)</p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Total Price Section -->
+            <div class="total-price">
+                <p style="font-weight: bold;">Tổng tiền</p>
+                <div class="price-value">
+                    <p id="totalPrice">0 đ</p>
+                </div>
+            </div>
+
+
+
+
+            <div class="payment-section">
+                <button class="paypal-btn" onclick="redirectToPayment()">THANH TOÁN</button>
+            </div>
+
+            <script>
+                function generateRandomID() {
+                    // Tạo mã ngẫu nhiên, độ dài 10 ký tự (có thể điều chỉnh)
+                    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                    let result = '';
+                    for (let i = 0; i < 10; i++) {
+                        result += characters.charAt(Math.floor(Math.random() * characters.length));
+                    }
+                    return result;
+                }
+
+                function redirectToPayment() {
+                    // Generate mã đơn ngẫu nhiên
+                    const reservationID = generateRandomID();
+                    const totalAmount = localStorage.getItem('totalAmount'); // Lấy giá trị từ localStorage
+
+                    // Kiểm tra xem totalAmount có tồn tại không
+                    if (!totalAmount) {
+                        alert("Dữ liệu tổng tiền không tồn tại. Vui lòng kiểm tra lại.");
+                        return;
+                    }
+
+                    // Xây dựng URL với mã đơn ngẫu nhiên và đường dẫn đầy đủ
+                    const url = `/html/payment.html?reservationID=THANH+TOAN+DON+DAT+PHONG+${reservationID}&totalAmount=${totalAmount}`;
+
+                    // Chuyển hướng đến trang thanh toán
+                    window.location.href = url;
+                }
+            </script>
+
+
+
+        </div>
+    </div>
+        <script src="/js/thanhtoan.js"></script>
+        <!--<script src="/js/booking.js"></script>-->
+
+</body>
+</html>

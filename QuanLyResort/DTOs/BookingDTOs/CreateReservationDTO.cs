@@ -1,5 +1,6 @@
-﻿
-using QuanLyResort.CustomValidator;
+﻿using QuanLyResort.CustomValidator;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace QuanLyResort.DTOs.BookingDTOs
@@ -14,23 +15,25 @@ namespace QuanLyResort.DTOs.BookingDTOs
         public List<int> RoomIDs { get; set; }  // Room IDs for the reservation
 
         [Required]
-        [DataType(DataType.Date)]
-        [FutureDateValidation(ErrorMessage = "Check-in date must be in the future.")]
+        [DataType(DataType.DateTime)]
+        [FutureDateValidation(ErrorMessage = "Check-in date and time must be in the future.")]
         public DateTime CheckInDate { get; set; }
 
         [Required]
-        [DataType(DataType.Date)]
-        [FutureDateValidation(ErrorMessage = "Check-out date must be in the future.")]
-        [DateGreaterThanValidation("CheckInDate", ErrorMessage = "Check-out date must be after check-in date.")]
+        [DataType(DataType.DateTime)]
+        [FutureDateValidation(ErrorMessage = "Check-out date and time must be in the future.")]
+        [DateGreaterThanValidation("CheckInDate", ErrorMessage = "Check-out date and time must be after check-in date and time.")]
         public DateTime CheckOutDate { get; set; }
 
         [Required]
-        public int Adult {  get; set; }
+        public int Adult { get; set; }
 
         [Required]
         public int Child { get; set; }
 
         [Required]
         public int Infant { get; set; }
+        [Required]
+        public string SDT { get; set; }
     }
 }

@@ -71,11 +71,12 @@ namespace QuanLyResort.Repository
         public async Task<UpdateRoomResponseDTO> UpdateRoomAsync(UpdateRoomRequestDTO request)
         {
             using var connection = _connectionFactory.CreateConnection();
-
             using var command = new SqlCommand("spUpdateRoom", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
+
+         
             command.Parameters.AddWithValue("@RoomID", request.RoomID);
             command.Parameters.AddWithValue("@RoomNumber", request.RoomNumber);
             command.Parameters.AddWithValue("@RoomTypeID", request.RoomTypeID);
@@ -83,30 +84,39 @@ namespace QuanLyResort.Repository
             command.Parameters.AddWithValue("@BedType", request.BedType);
             command.Parameters.AddWithValue("@RoomSize", request.RoomSize);
             command.Parameters.AddWithValue("@ViewType", request.ViewType);
-            command.Parameters.AddWithValue("Wifi", request.Wifi);
+            command.Parameters.AddWithValue("@Wifi", request.Wifi);
             command.Parameters.AddWithValue("@Breakfast", request.Breakfast);
-            command.Parameters.AddWithValue("CableTV", request.CableTV);
-            command.Parameters.AddWithValue("TransitCar", request.TransitCar);
-            command.Parameters.AddWithValue("Bathtub", request.Bathtub);
-            command.Parameters.AddWithValue("PetsAllowed", request.PetsAllowed);
-            command.Parameters.AddWithValue("RoomService", request.RoomService);
-            command.Parameters.AddWithValue("Iron", request.Iron);
+            command.Parameters.AddWithValue("@CableTV", request.CableTV);
+            command.Parameters.AddWithValue("@TransitCar", request.TransitCar);
+            command.Parameters.AddWithValue("@Bathtub", request.Bathtub);
+            command.Parameters.AddWithValue("@PetsAllowed", request.PetsAllowed);
+            command.Parameters.AddWithValue("@RoomService", request.RoomService);
+            command.Parameters.AddWithValue("@Iron", request.Iron);
             command.Parameters.AddWithValue("@Status", request.Status);
             command.Parameters.AddWithValue("@People", request.People);
             command.Parameters.AddWithValue("@IsActive", request.IsActive);
-            command.Parameters.AddWithValue("@ModifiedBy", "System");
-            command.Parameters.Add("@StatusCode", SqlDbType.Int).Direction = ParameterDirection.Output;
-            command.Parameters.Add("@Message", SqlDbType.NVarChar, 255).Direction = ParameterDirection.Output;
+
+            // Adding output parameters
+            var statusCodeParam = command.Parameters.Add("@StatusCode", SqlDbType.Int);
+            statusCodeParam.Direction = ParameterDirection.Output;
+
+            var messageParam = command.Parameters.Add("@Message", SqlDbType.NVarChar, 255);
+            messageParam.Direction = ParameterDirection.Output;
 
             try
             {
                 await connection.OpenAsync();
                 await command.ExecuteNonQueryAsync();
+
+                // Retrieve output values and return them in the response DTO
+                int statusCode = (int)statusCodeParam.Value;
+                string message = (string)messageParam.Value;
+
                 return new UpdateRoomResponseDTO
                 {
                     RoomId = request.RoomID,
-                    IsUpdated = (int)command.Parameters["@StatusCode"].Value == 0,
-                    Message = (string)command.Parameters["@Message"].Value
+                    IsUpdated = statusCode == 0, // Success if StatusCode is 0
+                    Message = message
                 };
             }
             catch (Exception ex)
@@ -114,6 +124,7 @@ namespace QuanLyResort.Repository
                 throw new Exception($"Error updating room: {ex.Message}", ex);
             }
         }
+
 
         public async Task<DeleteRoomResponseDTO> DeleteRoomAsync(int roomId)
         {

@@ -1,5 +1,223 @@
-﻿
+﻿let bookedDates = [];
+const style = document.createElement('style');
+style.textContent = `
+    .booked-date {
+        background-color: rgba(255, 0, 0, 0.4) !important; /* Slightly red background */
+        color: #ffffff !important; /* White text color */
+        pointer-events: none; /* Prevent clicking on booked dates */
+        border-radius: 50%; /* Circular background */
+        font-weight: bold; /* Bold text */
+    }
+`;
+document.head.appendChild(style); // Append the style to the head
 
+window.addEventListener('load', () => {
+    const storedCheckin = localStorage.getItem('checkin');
+    const storedCheckout = localStorage.getItem('checkout');
+    const defaultAdults = 1; // Giá trị mặc định cho adults
+    const defaultChildren = 0; // Giá trị mặc định cho children
+    const defaultInfants = 0; // Giá trị mặc định cho infants
+
+    // Xóa dữ liệu từ localStorage
+    localStorage.removeItem('adults');
+    localStorage.removeItem('children');
+    localStorage.removeItem('infants');
+
+    // Thiết lập lại các trường input
+    document.getElementById('adults').value = defaultAdults;
+    document.getElementById('children').value = defaultChildren;
+    document.getElementById('infants').value = defaultInfants;
+    if (storedCheckin) {
+        document.getElementById('checkin').value = storedCheckin;
+    }
+    if (storedCheckout) {
+        document.getElementById('checkout').value = storedCheckout;
+    }
+
+    updateStayDates();
+});
+
+function isValidCheckinTime(checkinDate) {
+    const date = new Date(checkinDate);
+    const hours = date.getHours();
+    return hours >= 12; // Giờ nhận phòng phải là 14:00 hoặc sau đó
+}
+
+function isValidCheckoutTime(checkoutDate) {
+    const date = new Date(checkoutDate);
+    const hours = date.getHours();
+    return hours <=12; // Giờ trả phòng phải trước 12:00
+}
+
+function isValidStayDuration(checkinDate, checkoutDate) {
+    const checkin = new Date(checkinDate);
+    const checkout = new Date(checkoutDate);
+    const diffInDays = (checkout - checkin) / (1000 * 60 * 60 * 24);
+    return diffInDays >= 1; // Thời gian lưu trú ít nhất là 1 đêm
+}
+
+function updateStayDates() {
+    const checkinDate = document.getElementById('checkin').value;
+    const checkoutDate = document.getElementById('checkout').value;
+
+    if (checkinDate && checkoutDate) {
+        const stayDatesElement = document.querySelector('.stay-dates');
+        const formattedCheckin = new Date(checkinDate).toLocaleString('en-GB');
+        const formattedCheckout = new Date(checkoutDate).toLocaleString('en-GB');
+
+        stayDatesElement.textContent = `${formattedCheckin} — ${formattedCheckout}`;
+    }
+    CalculateRoomCost();
+    displayCartRooms();
+}
+
+function isDateTimeBooked(selectedDate) {
+    return bookedDates.some(({ checkIn, checkOut }) =>
+        selectedDate >= checkIn && selectedDate < checkOut
+    );
+}
+
+
+
+function isDateBooked(date) {
+    return bookedDates.some(range => {
+        const checkIn = range.checkIn;
+        const checkOut = range.checkOut;
+        return date >= checkIn && date < checkOut;
+    });
+}
+
+function initializeDatePickers() {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1); // Ngày mai
+    tomorrow.setHours(12, 0, 0, 0); // Mặc định là 12h trưa
+
+    // Hàm thiết lập giờ mặc định là 12h trưa
+    function setDefaultTime(date) {
+        date.setHours(12);
+        date.setMinutes(0);
+        return date;
+    }
+
+    flatpickr("#checkin", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: tomorrow, // Chỉ cho phép chọn từ ngày mai trở đi
+        defaultDate: tomorrow, // Đặt mặc định ngày mai lúc 12h trưa
+        disable: [
+            function (date) {
+                return isDateBooked(date); // Disable nếu ngày đã được đặt
+            }
+        ],
+        onDayCreate: function (dObj, dStr, fp, dayElem) {
+            const date = new Date(dayElem.dateObj);
+            if (isDateBooked(date)) {
+                dayElem.classList.add("flatpickr-disabled", "booked-date");
+                dayElem.style.backgroundColor = "rgba(255, 0, 0, 0.4)";
+            }
+        },
+        onChange: function (selectedDates, dateStr, instance) {
+            if (selectedDates.length > 0) {
+                const selectedDate = selectedDates[0];
+
+                // Nếu giờ nhỏ hơn 12, tự động đặt lại thành 12h trưa
+                if (selectedDate.getHours() < 12) {
+                    selectedDate.setHours(12, 0, 0, 0);
+                    instance.setDate(selectedDate); // Cập nhật lại giá trị trong input
+                }
+
+                const isoFormat = selectedDate.toISOString();
+                console.log("Check-in date selected (ISO format):", isoFormat);
+                localStorage.setItem("checkin", isoFormat);
+            }
+        }
+    });
+
+    flatpickr("#checkout", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: tomorrow, // Chỉ cho phép chọn từ ngày mai trở đi
+        defaultDate: new Date(tomorrow), // Đặt mặc định ngày mai lúc 12h trưa
+        disable: [
+            function (date) {
+                return isDateBooked(date); // Disable nếu ngày đã được đặt
+            }
+        ],
+        onDayCreate: function (dObj, dStr, fp, dayElem) {
+            const date = new Date(dayElem.dateObj);
+            if (isDateBooked(date)) {
+                dayElem.classList.add("flatpickr-disabled", "booked-date");
+                dayElem.style.backgroundColor = "rgba(255, 0, 0, 0.4)";
+            }
+        },
+        onChange: function (selectedDates, dateStr, instance) {
+            if (selectedDates.length > 0) {
+                const selectedDate = selectedDates[0];
+
+                // Nếu giờ nhỏ hơn 12, tự động đặt lại thành 12h trưa
+                if (selectedDate.getHours() < 12) {
+                    selectedDate.setHours(12, 0, 0, 0);
+                    instance.setDate(selectedDate); // Cập nhật lại giá trị trong input
+                }
+
+                const isoFormat = selectedDate.toISOString();
+                console.log("Check-out date selected (ISO format):", isoFormat);
+                localStorage.setItem("checkout", isoFormat);
+            }
+        }
+    });
+}
+
+
+
+
+
+let roomData = []; // Dữ liệu phòng từ fetchReservations
+//async function fetchReservations(filter = null) {
+//    let url = '/api/Reservation/All';
+//    if (filter) {
+//        url += `?filter=${filter}`;
+//    }
+
+//    try {
+//        const response = await fetch(url);
+//        if (response.ok) {
+//            const result = await response.json();
+//            console.log(result);
+
+//            if (result && Array.isArray(result.data)) {
+//                // Lọc các trạng thái không phải 'Cancelled' và bao gồm 'Checked-out'
+//                reservationData = result.data.filter(reservation =>
+//                    reservation.status !== 'Cancelled' && reservation.status !== 'Checked-out'
+//                );
+
+//                // Map các ngày đã được đặt
+//                bookedDates = reservationData.map(reservation => ({
+//                    checkIn: new Date(reservation.checkInDate),
+//                    checkOut: new Date(reservation.checkOutDate),
+//                    roomNumber: reservation.roomNumber,
+//                    roomType: reservation.typeName // Giả sử API trả về roomType
+//                }));
+//                roomData = JSON.parse(localStorage.getItem('rooms')) || [];
+//                // Khởi tạo date pickers sau khi fetch dữ liệu
+//                initializeDatePickers();
+//            } else {
+//                console.error("Unexpected data format:", result);
+//            }
+//        } else {
+//            console.error("Error fetching reservations:", response.statusText);
+//        }
+//    } catch (error) {
+//        console.error("Network error:", error);
+//    }
+//}
+
+
+
+
+function formatCurrencyVND(amount) {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+}
 async function fetchImageRoom() {
     let url = '/api/Image/all'; // API endpoint to fetch images
     try {
@@ -46,8 +264,13 @@ async function increaseGuestCount(guestType) {
     // Set a maximum limit if needed, e.g., 5 for each type
     if (currentValue < 5) {
         input.value = currentValue + 1;
+
+        // Lưu giá trị vào localStorage
+        saveGuestCountsToLocalStorage();
     }
 }
+
+
 
 async function decreaseGuestCount(guestType) {
     const input = document.getElementById(guestType);
@@ -56,9 +279,21 @@ async function decreaseGuestCount(guestType) {
     // Prevent the count from going below 0
     if (currentValue > 0) {
         input.value = currentValue - 1;
+
+        // Lưu giá trị vào localStorage
+        saveGuestCountsToLocalStorage();
     }
 }
+function saveGuestCountsToLocalStorage() {
+    const adults = document.getElementById('adults').value;
+    const children = document.getElementById('children').value;
+    const infants = document.getElementById('infants').value;
 
+    // Lưu giá trị vào localStorage
+    localStorage.setItem('adults', adults);
+    localStorage.setItem('children', children);
+    localStorage.setItem('infants', infants);
+}
 
 async function fetchRoom(viewType = '', sortPrice = '', minPrice = '', maxPrice = '') {
     const localStorageKey = 'roomsData'; // Key for storing rooms in localStorage
@@ -131,28 +366,40 @@ async function CreateReservation() {
     const checkInDate = localStorage.getItem('checkin');
     const checkOutDate = localStorage.getItem('checkout');
     const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
-    // Get guest counts from frontend
-    const adults = parseInt(document.getElementById('adults').value);
-    const children = parseInt(document.getElementById('children').value);
-    const infants = parseInt(document.getElementById('infants').value);
+    const totalAmount = localStorage.getItem('totalAmount');
+    const phone = localStorage.getItem('phone'); // Lấy số điện thoại từ localStorage
 
+    // Lấy số lượng người từ localStorage
+    const adults = parseInt(localStorage.getItem('adults')) || 0;
+    const children = parseInt(localStorage.getItem('children')) || 0;
+    const infants = parseInt(localStorage.getItem('infants')) || 0;
 
- 
+    // Kiểm tra số điện thoại
+    if (!phone || phone.trim() === '') {
+        showAlert('Vui lòng nhập số điện thoại.');
+        return;
+    }
 
     const totalPeople = rooms.reduce((total, room) => total + (room.people || 0), 0);
-    console.log(totalPeople);
     if (rooms.length === 0) {
         showAlert(`Vui lòng chọn phòng bạn muốn đặt cho chuyến đi này.`);
         return;
     }
 
-    if (!checkInDate) {
+    if (!checkInDate || !checkOutDate) {
         showAlert(`Vui lòng chọn ngày đặt phòng.`);
         return;
     }
 
-    if (!checkOutDate) {
-        showAlert(`Vui lòng chọn ngày trả phòng.`);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const checkIn = new Date(checkInDate);
+    const checkOut = new Date(checkOutDate);
+    checkIn.setHours(0, 0, 0, 0);
+    checkOut.setHours(0, 0, 0, 0);
+
+    if (checkIn <= today || checkOut <= checkIn) {
+        showAlert(`Ngày check-in hoặc check-out không hợp lệ.`);
         return;
     }
 
@@ -161,70 +408,53 @@ async function CreateReservation() {
         return;
     }
 
-    // Check if at least one guest is selected
     if (adults + children + infants === 0) {
         showAlert(`Vui lòng chọn số lượng khách.`);
         return;
     }
-    if (parseInt(adults + children + infants) > totalPeople) {
+
+    if (adults + children > totalPeople) {
         showAlert(`Số lượng khách không được vượt quá ${totalPeople} người.`);
         return;
     }
 
     const roomIDs = rooms.map(room => room.roomID);
 
-    // Chuẩn bị dữ liệu API theo định dạng yêu cầu
+    // Chuẩn bị dữ liệu API
     const params = {
         userID: userInfo.userId,
         roomIDs: roomIDs,
-        checkInDate: checkInDate, // Ngày check-in
-        checkOutDate: checkOutDate, // Ngày check-out
-        adult: parseInt(adults),
-        child: parseInt(children),
-        infant: parseInt(infants)
+        checkInDate: checkInDate,
+        checkOutDate: checkOutDate,
+        adult: adults,
+        child: children,
+        infant: infants,
+        SDT: phone // Thêm số điện thoại vào params
     };
 
     try {
-        // Gửi request POST tới API để tạo đặt phòng
         const response = await fetch(url, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json', // Xác định kiểu nội dung là JSON
-                'Accept': 'application/json' // Chấp nhận phản hồi kiểu JSON
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
-            body: JSON.stringify(params) // Chuyển tham số thành chuỗi JSON
+            body: JSON.stringify(params)
         });
 
-        const data = await response.json(); // Lấy dữ liệu trả về từ API
+        const data = await response.json();
 
         if (response.ok && data.success) {
             showSuccessAlert('Đặt phòng thành công');
-            console.log("Đặt phòng thành công:", data);
-
-            // Update room status to "Occupied" after successful reservation
-            const allRooms = JSON.parse(localStorage.getItem('roomsData')) || [];
-            rooms.forEach(room => {
-                const roomToUpdate = allRooms.find(r => r.roomID === room.roomID);
-                if (roomToUpdate && roomToUpdate.status === "Available") {
-                    roomToUpdate.status = "Occupied"; // Change status to occupied
-                }
-            });
-
-            // Save the updated roomsData to localStorage
-            localStorage.setItem('roomsData', JSON.stringify(allRooms));
-            fetchRoom();
-
-            return data;  // Trả về dữ liệu nhận được từ API
+            localStorage.setItem('reservationID', data.data.reservationID);
+            return data;
         } else {
-            console.error("Lỗi khi tạo đặt phòng:", response.status, response.statusText);
-            const errorMessage = data.message || 'Đặt phòng không thành công';
-            console.error("Chi tiết lỗi:", errorMessage);
-            showAlert('Phòng này đã được đặt rồi');
-            return null; // Trả về null nếu có lỗi
+            showAlert(data.message || 'Đặt phòng không thành công.');
+            return null;
         }
     } catch (error) {
-        console.error("Lỗi mạng:", error);
-        return null; // Trả về null nếu có lỗi mạng
+        console.error("Lỗi khi gửi yêu cầu đặt phòng:", error);
+        return null;
     }
 }
 
@@ -328,8 +558,8 @@ function renderRoom(rooms, roomTypes, imageRoom) {
                         <p>${room.people || '1'} <strong> Người</strong></p>
                         <p>${room.roomSize || 'N/A'}</p>
                     </div>
-                    <p style="margin-left: auto;">Còn lại ${availableCount} phòng</p> <!-- Display available count -->
-                    <p style="margin-left: auto;">Giá: ${room.price}đ / đêm</p>
+
+                    <p style="margin-left: auto;">Giá: ${formatCurrencyVND(room.price)} / đêm</p>
                     <button class="select-button" data-room='${JSON.stringify(room)}'>Chọn</button>
                 </div>
             </div>
@@ -343,51 +573,21 @@ function renderRoom(rooms, roomTypes, imageRoom) {
         button.addEventListener('click', (e) => {
             const roomData = JSON.parse(e.target.getAttribute('data-room'));
             const roomType = roomTypes.find(type => type.roomTypeID === roomData.roomTypeID);
-            addRoomToCart(roomData,roomType);
+            const checkInDate = new Date();
+            checkInDate.setDate(checkInDate.getDate() + 1); // Ngày mai
+            checkInDate.setHours(12, 0, 0, 0); // 12 PM
+
+            const checkOutDate = new Date();
+            checkOutDate.setDate(checkOutDate.getDate() + 2); // Ngày mốt
+            checkOutDate.setHours(12, 0, 0, 0); // 12 PM
+            addRoom(roomType, checkInDate, checkOutDate);
         });
     });
 }
 
 
-function addRoomToCart(room, roomType) {
-    const rooms = JSON.parse(localStorage.getItem('rooms')) || [];
-    const allRooms = JSON.parse(localStorage.getItem('roomsData')) || [];
 
-    // Create a new object to store room and roomType together
-    const roomWithType = { ...room, roomType }; // Combine room data with roomType
-
-    // Filter for available rooms of the same roomTypeID and matching roomType properties
-    const availableRooms = allRooms.filter(r =>
-        r.roomTypeID === roomType.roomTypeID && // Match roomTypeID
-        r.status === "Available" // Ensure the room is available
-    );
-
-    console.log(availableRooms); // Log available rooms for debugging
-
-    if (availableRooms.length === 0) {
-        showAlert('No available rooms of this type.');
-        return;
-    }
-
-    // Select a random room from the available rooms
-    const randomRoom = availableRooms[Math.floor(Math.random() * availableRooms.length)];
-
-    // Include roomType in the selected room
-    const roomToAdd = { ...randomRoom, roomType }; // Include the roomType in the selected room object
-
-    // Check if the room is already in the cart based on a unique identifier, e.g., roomID
-    const existingRoom = rooms.find(r => r.roomID === roomToAdd.roomID);
-    if (!existingRoom) {
-        rooms.push(roomToAdd); // Add the combined room object if it doesn't already exist
-    } else {
-        alert('Room already added to cart.'); // Alert if the room is already in the cart
-    }
-
-    // Save the updated rooms to localStorage
-    localStorage.setItem('rooms', JSON.stringify(rooms)); // Save cart to localStorage
-    CalculateRoomCost();
-    displayCartRooms(); // Re-render the cart
-}
+ 
 
 
 
@@ -421,10 +621,10 @@ function removeRoomFromCart(roomID) {
     const allRooms = JSON.parse(localStorage.getItem('roomsData')) || [];
     const roomToRestore = allRooms.find(room => room.roomID === removedRoom.roomID);
 
-    if (roomToRestore) {
-        roomToRestore.status = "Occupied"; // Change status back to available
-        localStorage.setItem('roomsData', JSON.stringify(allRooms)); // Save the updated room data back to localStorage
-    }
+    //if (roomToRestore) {
+    //    roomToRestore.status = "Occupied"; // Change status back to available
+    //    localStorage.setItem('roomsData', JSON.stringify(allRooms)); // Save the updated room data back to localStorage
+    //}
 }
 
 // New function to update totalAmount and gst
@@ -446,61 +646,96 @@ function updateTotalAmountAndGST(rooms) {
 }
 
 
-
 function displayCartRooms() {
+    console.log("Displaying cart rooms...");
     const roomCart = document.getElementById('room-cart');
     const rooms = JSON.parse(localStorage.getItem('rooms')) || [];
 
+    // Log dữ liệu localStorage
+    console.log("Check-in date:", localStorage.getItem('checkin'));
+    console.log("Check-out date:", localStorage.getItem('checkout'));
+    console.log("Rooms:", rooms);
+
+    // Retrieve and format check-in and check-out dates
+    const checkinISO = localStorage.getItem('checkin');
+    const checkoutISO = localStorage.getItem('checkout');
+
+    const checkinDate = checkinISO ? new Date(checkinISO).toLocaleString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    }) : 'Chọn ngày';
+
+    const checkoutDate = checkoutISO ? new Date(checkoutISO).toLocaleString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    }) : 'Chọn ngày';
+
+    const currencyFormatter = new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+    });
 
     if (rooms.length > 0) {
         roomCart.style.display = 'block';
         const cartWrapper = roomCart.querySelector('.cart-wrapper');
-        cartWrapper.innerHTML = ''; // Clear existing items
+        cartWrapper.innerHTML = '';
 
-        let totalPrice = 0; // Initialize total price
-
+        // Hiển thị từng phòng
         rooms.forEach((room, index) => {
+            const roomPriceFormatted = currencyFormatter.format(room.price);
             const roomHTML = `
                 <div class="cart-container">
                     <p class="title-room">Phòng ${index + 1}</p>
-                    <p class="stay-dates">${localStorage.getItem('checkin') || 'Chọn ngày'} — ${localStorage.getItem('checkout') || 'Chọn ngày'}</p>
-
+                    <p class="stay-dates">${checkinDate} — ${checkoutDate}</p>
                     <div class="room-details">
-                        <p>x1 ${room.roomType.typeName}  Giá: <span class="price-info">${room.price}đ</span></p>
-                        <p>${room.people || '1 Người lớn'}  Người</p>
+                        <p>x1 ${room.roomTypeName} Giá: <span class="price-info">${roomPriceFormatted}</span></p>
+                        <p>${room.people || '1 Người lớn'} Người</p>
                     </div>
                     <div class="delete-order" onclick="removeRoomFromCart('${room.roomID}')"> 
-        
-       <i class="fas fa-trash"></i> <!-- For solid icons -->
-
+                        <i class="fas fa-trash"></i>
                     </div>
                 </div>
             `;
-
-            // Append each room's HTML as a separate cart container
             cartWrapper.insertAdjacentHTML('beforeend', roomHTML);
-
-            // Add room price to total
-            totalPrice += parseInt(room.price); // Assuming price is a string, convert to integer
         });
-        const gst = localStorage.getItem('gst') || 0;
-        const totalAmount = localStorage.getItem('totalAmount') || totalPrice
 
-        // Display the total price only once at the end
+        // Lấy GST và tổng giá trị từ localStorage
+        const gst = parseInt(localStorage.getItem('gst') || 0); // GST
+        const gstFormatted = currencyFormatter.format(gst);
+
+        const totalAmountWithoutGST = parseInt(localStorage.getItem('totalAmount') || 0); // Tổng tiền chưa cộng GST
+        const totalAmount = totalAmountWithoutGST + gst; // Tổng tiền đã cộng GST
+        const totalAmountFormatted = currencyFormatter.format(totalAmount);
+
+        // Hiển thị tổng cộng
         const totalHTML = `
             <div class="total-info">
-                <p class="total-price1">Thuế phí: <span class="price-info1">${gst}đ</span></p>
-                <p class="total-price">Tổng cộng: <span class="price-info">${totalAmount}đ</span></p>
+                <p class="total-price1">Thuế phí: <span class="price-info1">${gstFormatted}</span></p>
+                <p class="total-price">Tổng cộng: <span class="price-info">${totalAmountFormatted}</span></p>
                 <p class="tax-info">(Bao gồm thuế phí)</p>
             </div>
         `;
 
-        cartWrapper.insertAdjacentHTML('beforeend', totalHTML); // Append total price info
+        cartWrapper.insertAdjacentHTML('beforeend', totalHTML);
+
+        // Cập nhật lại tổng giá trị (nếu cần)
+        localStorage.setItem('totalAmount', totalAmount);
     } else {
         roomCart.style.display = 'none';
     }
-
 }
+
+
+
+
 
 function showAlert(message) {
     const alertBox = document.getElementById('alert-box');
@@ -537,7 +772,7 @@ function showSuccessAlert(message) {
             successBox.style.display = 'none';
             successBox.classList.remove('fade-out');
         }, 600); // Match the transition duration
-    }, 800); // Show for 3 seconds
+    }, 1000); // Show for 3 seconds
 }
 
 function closeSuccessAlert() {
@@ -546,31 +781,93 @@ function closeSuccessAlert() {
 }
 
 
-function updateStayDates() {
-    const checkinDate = document.getElementById('checkin').value;
-    const checkoutDate = document.getElementById('checkout').value;
+async function addRoom(roomType, checkInDate, checkOutDate) {
+    const checkIn = new Date(checkInDate);
+    const checkOut = new Date(checkOutDate);
 
-    if (checkinDate && checkoutDate) {
-        const stayDatesElement = document.querySelector('.stay-dates');
-        stayDatesElement.textContent = `${checkinDate} — ${checkoutDate}`;
+    // Lấy dữ liệu phòng từ localStorage
+    const roomsData = JSON.parse(localStorage.getItem('roomsData')) || [];
+    const roomsOfType = roomsData.filter(room => room.roomTypeID === roomType.roomTypeID);
+
+    let availableRoom = null;
+
+    try {
+        // Fetch dữ liệu đặt phòng từ API
+        const response = await fetch('/api/Reservation/All');
+        if (response.ok) {
+            const result = await response.json();
+            console.log("Reservation data from API:", result);
+
+            if (result && Array.isArray(result.data)) {
+                const reservationData = result.data.filter(reservation =>
+                    reservation.status !== 'Cancelled' && reservation.status !== 'Checked-out'
+                );
+                // Kiểm tra từng phòng từ roomsOfType
+                for (const room of roomsOfType) {
+                    console.log(`Checking room: ${room.roomNumber}`);
+                    let isConflict = false;
+
+                    // Duyệt qua tất cả các đặt phòng từ API
+                    for (const reservation of reservationData) {
+                        console.log(`Checking against reservation:`, reservation);
+
+                        if (
+                            reservation.roomNumber === room.roomNumber &&
+                            (
+                                (checkIn >= new Date(reservation.checkInDate) && checkIn < new Date(reservation.checkOutDate)) || // checkIn trùng
+                                (checkOut > new Date(reservation.checkInDate) && checkOut <= new Date(reservation.checkOutDate)) || // checkOut trùng
+                                (checkIn <= new Date(reservation.checkInDate) && checkOut >= new Date(reservation.checkOutDate))    // Bao trùm toàn bộ
+                            )
+                        ) {
+                            isConflict = true;
+                            console.log(`Conflict found for room: ${room.roomNumber}`);
+                            break; // Nếu trùng, dừng kiểm tra phòng này
+                        }
+                    }
+
+                    // Nếu không trùng ngày, chọn phòng này
+                    if (!isConflict) {
+                        // Kết hợp dữ liệu của room và roomType
+                        availableRoom = {
+                            ...room, // Copy toàn bộ thuộc tính của room
+                            roomTypeName: roomType.typeName, // Thêm thông tin roomType
+                            roomTypeID: roomType.roomTypeID // Hoặc thêm các thuộc tính khác từ roomType nếu cần
+                        };
+                        console.log(`Room available: ${availableRoom.roomNumber}`);
+                        break; // Dừng vòng lặp khi tìm thấy phòng phù hợp
+                    }
+
+                }
+
+                // Thêm phòng nếu tìm thấy phòng trống
+                if (availableRoom) {
+                    console.log(`Adding reservation for room: ${availableRoom.roomNumber}`);
+                    const currentRooms = JSON.parse(localStorage.getItem('rooms')) || [];
+                    currentRooms.push(availableRoom);
+                    localStorage.setItem('rooms', JSON.stringify(currentRooms));
+                    showSuccessAlert(`Thêm thành công phòng vào đơn đặt`);
+                    CalculateRoomCost();
+                    displayCartRooms(); // Re-render the cart
+                } else {
+                    showAlert(`Phòng ${roomType.typeName} đã hết chỗ vào thời gian này.`);
+                }
+            } else {
+                console.error("Unexpected data format from API:", result);
+            }
+        } else {
+            console.error("Error fetching reservations:", response.statusText);
+        }
+    } catch (error) {
+        console.error("Network error:", error);
     }
-    CalculateRoomCost();
-    displayCartRooms();
-
 }
 
-document.getElementById('reservationForm').addEventListener('submit', async function (event) {
+document.getElementById('reservationForm').addEventListener('submit', function (event) {
     event.preventDefault(); // Ngừng hành động submit mặc định của form
 
-  
-
-    // Gọi hàm CreateReservation nếu các thông tin hợp lệ
-    const reservationResult = await CreateReservation();
-    if (reservationResult) {
-        alert("Đặt phòng thành công!");
-    }
+    // Chuyển hướng đến /checkout
+    window.location.href = '/checkout';
 });
-
 
 document.querySelector('.search-btn').addEventListener('click', () => {
     const viewType = document.getElementById('viewType').value;
@@ -583,41 +880,57 @@ document.querySelector('.search-btn').addEventListener('click', () => {
     // Call fetchRoom with search parameters
     fetchRoom(viewType, sortPrice, minPrice, maxPrice);
 });
-document.getElementById('checkin').addEventListener('change', () => {
-    const checkinDate = document.getElementById('checkin').value;
-    localStorage.setItem('checkin', checkinDate);
-    updateStayDates();
-
-});
-
-document.getElementById('checkout').addEventListener('change', () => {
-    const checkoutDate = document.getElementById('checkout').value;
-    localStorage.setItem('checkout', checkoutDate);
-    updateStayDates();
-});
-
-
-window.addEventListener('load', () => {
-    const storedCheckin = localStorage.getItem('checkin');
-    const storedCheckout = localStorage.getItem('checkout');
-
-    if (storedCheckin) {
-        document.getElementById('checkin').value = storedCheckin;
+document.getElementById('checkin').addEventListener('input', (event) => {
+    const selectedDate = new Date(event.target.value);
+    if (!isValidCheckinTime(selectedDate)) {
+        event.target.style.backgroundColor = '#f8d7da'; // Red background for invalid time
+        event.target.setCustomValidity("Check-in time must be 14:00 or later.");
+        showAlert('Check-in time must be 14:00 or later.');
+    } else if (isDateTimeBooked(selectedDate)) {
+        event.target.style.backgroundColor = '#f8d7da'; // Red background for booked
+        event.target.setCustomValidity("This date and time are already booked.");
+        showAlert('This date and time are already booked.');
+    } else {
+        event.target.style.backgroundColor = ''; // Reset background
+        event.target.setCustomValidity(""); // Clear the error
+        localStorage.setItem("checkin", selectedDate.toISOString()); // Store valid check-in date
+        updateStayDates();
     }
-    if (storedCheckout) {
-        document.getElementById('checkout').value = storedCheckout;
-    }
-
-    updateStayDates();
 });
+
+document.getElementById('checkout').addEventListener('input', (event) => {
+    const selectedDate = new Date(event.target.value);
+    const checkinDate = new Date(localStorage.getItem("checkin"));
+
+    if (!isValidCheckoutTime(selectedDate)) {
+        event.target.style.backgroundColor = '#f8d7da'; // Red background for invalid time
+        event.target.setCustomValidity("Check-out time must be before 12:00.");
+        showAlert('Check-out time must be before 12:00.');
+    } else if (!isValidStayDuration(checkinDate, selectedDate)) {
+        event.target.style.backgroundColor = '#f8d7da'; // Red background for invalid duration
+        event.target.setCustomValidity("Stay duration must be at least 1 night.");
+        showAlert('Stay duration must be at least 1 night.');
+    } else if (isDateTimeBooked(selectedDate)) {
+        event.target.style.backgroundColor = '#f8d7da'; // Red background for booked
+        event.target.setCustomValidity("This date and time are already booked.");
+        showAlert('This date and time are already booked.');
+    } else {
+        event.target.style.backgroundColor = ''; // Reset background
+        event.target.setCustomValidity(""); // Clear the error
+        localStorage.setItem("checkout", selectedDate.toISOString()); // Store valid check-out date
+        updateStayDates();
+    }
+});
+
 
 document.addEventListener('DOMContentLoaded', () => {
 
     fetchRoom();
     displayCartRooms();
+/*    fetchReservations();*/
+    initializeDatePickers();
 
-
-
+    setInterval(fetchReservations, 60000); 
 
 });
 

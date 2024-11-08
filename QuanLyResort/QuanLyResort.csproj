@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\html\payment.html" />
+    <_ContentIncludedByDefault Remove="wwwroot\src\Cac-phong-cach-thiet-ke-resort.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="Controllers\CancellationController.cs" />
     <Content Include="Controllers\ReservationController.cs" />
     <Content Include="DTOs\BookingDTOs\AddGuestsToReservationDTO.cs" />
@@ -49,7 +54,6 @@
   <ItemGroup>
     <Folder Include="DTOs\PaymentDTOs\" />
     <Folder Include="Views\" />
-    <Folder Include="wwwroot\src\" />
   </ItemGroup>
 
 </Project>

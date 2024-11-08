@@ -1,8 +1,11 @@
 ﻿
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using QuanLyResort.DTOs.BookingDTOs;
 using QuanLyResort.Models;
 using QuanLyResort.Repository;
+using System.Data;
 using System.Net;
 
 namespace QuanLyResort.Controllers
@@ -19,6 +22,94 @@ namespace QuanLyResort.Controllers
             _reservationRepository = reservationRepository;
             _logger = logger;
         }
+        [HttpPost("expire")]
+        public async Task<IActionResult> ExpireReservations()
+        {
+            var response = await _reservationRepository.ExpireReservationsAsync();
+            if (response.Success)
+            {
+                return Ok(new { message = response.Message, rowsAffected = response.RowsAffected });
+            }
+            else
+            {
+                return BadRequest(new { message = response.Message });
+            }
+        }
+
+        [HttpGet("All")]
+        public async Task<APIResponse<List<ReservationDetailsResponseDTO>>> GetAllReservations()
+        {
+            _logger.LogInformation("Request Received for GetAllReservations");
+            try
+            {
+                // Gọi Repository để lấy danh sách đặt phòng
+                var reservations = await _reservationRepository.GetAllReservationsAsync();
+
+                // Trả về APIResponse với dữ liệu danh sách đặt phòng
+                return new APIResponse<List<ReservationDetailsResponseDTO>>(reservations, "Retrieved all Reservations Successfully.");
+            }
+            catch (Exception ex)
+            {
+                // Ghi log lỗi
+                _logger.LogError(ex, "Error Retrieving all Reservations");
+
+                // Trả về lỗi với mã lỗi HTTP
+                return new APIResponse<List<ReservationDetailsResponseDTO>>(HttpStatusCode.InternalServerError, "Internal server error: " + ex.Message);
+            }
+        }
+        [HttpGet("AllReservationRooom")]
+        public async Task<APIResponse<List<ReservationRoomDetailsResponseDTO>>> GetAllReservationRooms()
+        {
+            _logger.LogInformation("Request Received for GetAllReservationRooms");
+            try
+            {
+                var reservationRooms = await _reservationRepository.GetAllReservationRoomsAsync();
+
+                return new APIResponse<List<ReservationRoomDetailsResponseDTO>>(reservationRooms, "Retrieved all Reservation Rooms Successfully.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error Retrieving all Reservation Rooms");
+                return new APIResponse<List<ReservationRoomDetailsResponseDTO>>(HttpStatusCode.InternalServerError, "Internal server error: " + ex.Message);
+            }
+        }
+
+        [HttpPost("ToggleReservationStatus")]
+        public async Task<APIResponse<string>> ToggleReservationStatusAsync([FromBody] ToggleReservationStatusRequest request)
+        {
+            _logger.LogInformation("Request Received for ToggleReservationStatusAsync");
+
+            try
+            {
+                // Kiểm tra thông tin request hợp lệ
+                if (request == null || request.ReservationID <= 0 || string.IsNullOrEmpty(request.Status))
+                {
+                    return new APIResponse<string>(HttpStatusCode.BadRequest, "Invalid request parameters.");
+                }
+
+                // Gọi repository để cập nhật trạng thái đặt phòng
+                var errorMessage = await _reservationRepository.UpdateReservationStatusAsync(request.ReservationID, request.Status);
+
+                // Nếu có thông báo lỗi từ repository, trả về lỗi
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    return new APIResponse<string>(HttpStatusCode.BadRequest, errorMessage);
+                }
+
+                // Trả về thông báo thành công
+                return new APIResponse<string>("Reservation status updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                // Ghi log lỗi
+                _logger.LogError(ex, "Error toggling reservation status");
+
+                // Trả về lỗi với mã lỗi HTTP
+                return new APIResponse<string>(HttpStatusCode.InternalServerError, "Internal server error: " + ex.Message);
+            }
+        }
+
+
 
         [HttpPost("CalculateRoomCosts")]
         public async Task<APIResponse<RoomCostsResponseDTO>> CalculateRoomCosts([FromBody] RoomCostsDTO model)

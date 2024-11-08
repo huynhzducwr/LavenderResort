@@ -87,6 +87,7 @@ namespace QuanLyResort.Repository
                 command.Parameters.AddWithValue("@Adult", reservation.Adult);
                 command.Parameters.AddWithValue("@Child", reservation.Child);
                 command.Parameters.AddWithValue("@Infant", reservation.Infant);
+                command.Parameters.AddWithValue("@SDT", reservation.SDT);
 
 
                 var table = new DataTable();
@@ -114,6 +115,34 @@ namespace QuanLyResort.Repository
             return createReservationResponseDTO;
         }
 
+        public async Task<ExpireReservationsResponseDTO> ExpireReservationsAsync()
+        {
+            var response = new ExpireReservationsResponseDTO();
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                using var command = new SqlCommand("spExpireReservations", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+
+                await connection.OpenAsync();
+                int rowsAffected = await command.ExecuteNonQueryAsync();
+
+                response.Success = true;
+                response.Message = $"{rowsAffected} reservations expired successfully.";
+                response.RowsAffected = rowsAffected;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception as needed
+                response.Success = false;
+                response.Message = $"An error occurred: {ex.Message}";
+            }
+
+            return response;
+        }
+
         public async Task<AddGuestsToReservationResponseDTO> AddGuestsToReservationAsync(AddGuestsToReservationDTO details)
         {
             AddGuestsToReservationResponseDTO addGuestsToReservationResponseDTO = new AddGuestsToReservationResponseDTO();
@@ -133,7 +162,6 @@ namespace QuanLyResort.Repository
                 table.Columns.Add("Phone", typeof(string));
                 table.Columns.Add("AgeGroup ", typeof(string));
                 table.Columns.Add("Address", typeof(string));
-
                 table.Columns.Add("RoomID", typeof(int));
 
                 details.GuestDetails.ForEach(guest =>
@@ -224,5 +252,125 @@ namespace QuanLyResort.Repository
             }
             return updatePaymentStatusResponseDTO;
         }
+        public async Task<List<ReservationRoomDetailsResponseDTO>> GetAllReservationRoomsAsync()
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            using var command = new SqlCommand("GetAllReservationRooms", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            try
+            {
+                await connection.OpenAsync();
+                var reservationRooms = new List<ReservationRoomDetailsResponseDTO>();
+                using var reader = await command.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    reservationRooms.Add(new ReservationRoomDetailsResponseDTO
+                    {
+                        ReservationRoomID = reader.GetInt32(reader.GetOrdinal("ReservationRoomID")),
+                        ReservationID = reader.GetInt32(reader.GetOrdinal("ReservationID")),
+                        RoomID = reader.GetInt32(reader.GetOrdinal("RoomID")),
+                        TypeName = reader.GetString(reader.GetOrdinal("TypeName")),
+                        Firstname = reader.GetString(reader.GetOrdinal("Firstname")),
+                        Lastname = reader.GetString(reader.GetOrdinal("Lastname")),
+                        ImageURL = reader.GetString(reader.GetOrdinal("ImageURL")),
+                        CheckInDate = reader.GetDateTime(reader.GetOrdinal("CheckInDate")),
+                        CheckOutDate = reader.GetDateTime(reader.GetOrdinal("CheckOutDate"))
+                    });
+                }
+                return reservationRooms;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error retrieving all reservation rooms: {ex.Message}", ex);
+            }
+        }
+        public async Task<List<ReservationDetailsResponseDTO>> GetAllReservationsAsync()
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            using var command = new SqlCommand("GetAllReservations", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            try
+            {
+                await connection.OpenAsync();
+                var reservations = new List<ReservationDetailsResponseDTO>();
+                using var reader = await command.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    reservations.Add(new ReservationDetailsResponseDTO
+                    {
+                        ReservationID = reader.GetInt32(reader.GetOrdinal("ReservationID")),
+                        UserID = reader.GetInt32(reader.GetOrdinal("UserID")),
+                        BookingDate = reader.GetDateTime(reader.GetOrdinal("BookingDate")),
+                        TotalCost = reader.GetDecimal(reader.GetOrdinal("TotalCost")),
+                        TypeName = reader.GetString(reader.GetOrdinal("TypeName")),
+                        Adult = reader.GetInt32(reader.GetOrdinal("Adult")),
+                        Firstname = reader.GetString(reader.GetOrdinal("Firstname")),
+                        Lastname = reader.GetString(reader.GetOrdinal("Lastname")),
+                        SDT = reader.GetString(reader.GetOrdinal("SDT")),
+                        RoomNumber = reader.GetString(reader.GetOrdinal("RoomNumber")),
+                        Child = reader.GetInt32(reader.GetOrdinal("Child")),
+                        Infant = reader.GetInt32(reader.GetOrdinal("Infant")),
+                        NumberOfNights = reader.GetInt32(reader.GetOrdinal("NumberOfNights")),
+                        CheckInDate = reader.GetDateTime(reader.GetOrdinal("CheckInDate")),
+                        CheckOutDate = reader.GetDateTime(reader.GetOrdinal("CheckOutDate")),
+                        Status = reader.GetString(reader.GetOrdinal("Status")),
+                        CreatedDate = reader.GetDateTime(reader.GetOrdinal("CreatedDate"))
+                    });
+                }
+                return reservations;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error retrieving all reservations: {ex.Message}", ex);
+            }
+        }
+
+
+        public async Task<string> UpdateReservationStatusAsync(int reservationId, string status)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            using var command = new SqlCommand("spUpdateReservationStatus", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            // Thêm các tham số cho thủ tục
+            command.Parameters.Add(new SqlParameter("@ReservationID", SqlDbType.Int) { Value = reservationId });
+            command.Parameters.Add(new SqlParameter("@Status", SqlDbType.NVarChar, 50) { Value = status });
+            var errorMessageParam = new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, 255)
+            {
+                Direction = ParameterDirection.Output
+            };
+            command.Parameters.Add(errorMessageParam);
+
+            try
+            {
+                await connection.OpenAsync();
+                await command.ExecuteNonQueryAsync();
+
+                // Trả về thông báo lỗi nếu có (có thể là thông báo lỗi từ thủ tục)
+                var errorMessage = errorMessageParam.Value.ToString();
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    return errorMessage;  // Trả về thông báo lỗi nếu có
+                }
+
+                return "Reservation status updated successfully.";
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error updating reservation status: {ex.Message}", ex);
+            }
+        }
+
+
     }
+
+
 }

@@ -114,8 +114,8 @@ namespace QuanLyResort.Repository
                 {
                     UserID = reader.GetInt32("UserID"),
                     Email = reader.GetString("Email"),
-                    FirstName = reader.GetString("firstname"),
-                    LastName = reader.GetString("lastname"),
+                    FirstName = reader.GetString("Firstname"),
+                    LastName = reader.GetString("Lastname"),
                     IsActive = reader.GetBoolean("IsActive"),
                     RoleName = reader.GetString("RoleName"),
                     LastLogin = reader.GetValueByColumn<DateTime?>("LastLogin"),
@@ -176,25 +176,29 @@ namespace QuanLyResort.Repository
 
             command.Parameters.AddWithValue("@UserID", user.UserID);
             command.Parameters.AddWithValue("@Email", user.Email);
-            command.Parameters.AddWithValue("@firstname", user.FirstName);
-            command.Parameters.AddWithValue("@lastname", user.LastName);
+            command.Parameters.AddWithValue("@Firstname", user.FirstName);
+            command.Parameters.AddWithValue("@Lastname", user.LastName);
+
+            // Hash the password before updating
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
             command.Parameters.AddWithValue("@PasswordHash", hashedPassword);
-            command.Parameters.AddWithValue("@ModifiedBy", "System");
 
-
+            // Output parameter for error message
             var errorMessageParam = new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, 255)
             {
                 Direction = ParameterDirection.Output
             };
             command.Parameters.Add(errorMessageParam);
+
+            // Execute the stored procedure
             await connection.OpenAsync();
             await command.ExecuteNonQueryAsync();
 
+            // Retrieve and check the error message
             var message = errorMessageParam.Value?.ToString();
             if (string.IsNullOrEmpty(message))
             {
-                updateUserResponseDTO.Message = "Cap nhat thong tin user thanh cong";
+                updateUserResponseDTO.Message = "User information updated successfully.";
                 updateUserResponseDTO.IsUpdated = true;
             }
             else
@@ -202,6 +206,7 @@ namespace QuanLyResort.Repository
                 updateUserResponseDTO.Message = message;
                 updateUserResponseDTO.IsUpdated = false;
             }
+
             return updateUserResponseDTO;
         }
 
@@ -249,27 +254,39 @@ namespace QuanLyResort.Repository
                 CommandType = CommandType.StoredProcedure
             };
 
+            // Input parameter
             command.Parameters.AddWithValue("@Email", login.Email);
 
+            // Output parameters
             var passwordHashParam = new SqlParameter("@PasswordHash", SqlDbType.NVarChar, 255)
             {
                 Direction = ParameterDirection.Output
             };
-
             var userIdParam = new SqlParameter("@UserID", SqlDbType.Int)
             {
                 Direction = ParameterDirection.Output
             };
-
             var errorMessage = new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, 255)
             {
                 Direction = ParameterDirection.Output
             };
+            var firstnameParam = new SqlParameter("@Firstname", SqlDbType.NVarChar, 255)
+            {
+                Direction = ParameterDirection.Output
+            };
+            var lastnameParam = new SqlParameter("@Lastname", SqlDbType.NVarChar, 255)
+            {
+                Direction = ParameterDirection.Output
+            };
 
+            // Add parameters to command
+            command.Parameters.Add(passwordHashParam);
             command.Parameters.Add(userIdParam);
             command.Parameters.Add(errorMessage);
-            command.Parameters.Add(passwordHashParam);
+            command.Parameters.Add(firstnameParam);
+            command.Parameters.Add(lastnameParam);
 
+            // Execute stored procedure
             await connection.OpenAsync();
             await command.ExecuteNonQueryAsync();
 
@@ -283,6 +300,9 @@ namespace QuanLyResort.Repository
                 {
                     var userID = Convert.ToInt32(userIdParam.Value);
                     userLoginResponseDTO.UserId = userID;
+                    userLoginResponseDTO.Firstname = firstnameParam.Value.ToString(); // Get Firstname
+                    userLoginResponseDTO.Lastname = lastnameParam.Value.ToString();   // Get Lastname
+                    userLoginResponseDTO.Email = login.Email;                        // Return the input email
                     userLoginResponseDTO.IsLogin = true;
                     userLoginResponseDTO.Message = "Login Successful";
                     return userLoginResponseDTO;
@@ -290,19 +310,17 @@ namespace QuanLyResort.Repository
                 else
                 {
                     userLoginResponseDTO.IsLogin = false;
-                    userLoginResponseDTO.Message = "Thong tin khong hop le";
+                    userLoginResponseDTO.Message = "Thông tin không hợp lệ";
                     return userLoginResponseDTO;
                 }
-
-
             }
 
             var message = errorMessage.Value?.ToString();
             userLoginResponseDTO.IsLogin = false;
             userLoginResponseDTO.Message = message;
             return userLoginResponseDTO;
-
         }
+
 
         public async Task<(bool Success, string Message)> ToggleUserActiveAsync(int userId, bool isActive)
         {
