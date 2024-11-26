@@ -96,6 +96,8 @@ document.head.appendChild(style);
 // Variables to store the room data and filtered data
 let roomData = [];
 
+
+
 // Fetch data and display in the table
 async function fetchRooms(isActive = null) {
     let url = '/api/Room/All';
@@ -121,21 +123,55 @@ async function fetchRooms(isActive = null) {
     }
 }
 
+let roomTypeMap = {}; // Biến toàn cục lưu ánh xạ roomTypeID -> typeName
+
+async function fetchRoomTypes() {
+    let url = '/api/RoomType/AllRoomTypes';
+
+    try {
+        const response = await fetch(url);
+        if (response.ok) {
+            const result = await response.json();
+
+            if (result && result.data) {
+                const roomTypes = result.data;
+
+                // Tạo ánh xạ roomTypeID -> typeName
+                roomTypeMap = roomTypes.reduce((map, roomType) => {
+                    map[roomType.roomTypeID] = roomType.typeName;
+                    return map;
+                }, {});
+            } else {
+                console.error("Unexpected data format:", result);
+            }
+        } else {
+            console.error("Error fetching room types:", response.statusText);
+        }
+    } catch (error) {
+        console.error("Network error:", error);
+    }
+}
+
 function displayRooms(data) {
     const tableBody = document.getElementById('room-table-body');
     tableBody.innerHTML = ''; // Clear existing rows
 
     data.forEach((room, index) => {
+        const roomTypeName = roomTypeMap[room.roomTypeID] || "Không xác định"; // Lấy tên kiểu phòng từ roomTypeMap
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${room.roomNumber}</td>
-            <td>${room.roomTypeID}</td>
+            <td>${roomTypeName}</td> <!-- Hiển thị tên kiểu phòng -->
             <td>${room.roomSize}</td>
             <td>${room.bedType}</td>
             <td>${room.people}</td>
             <td>${room.price}</td>
             <td>${room.status}</td>
-            <td><button class="details-btn" onclick="toggleDetails(${index})">Xem Thêm</button></td>
+            <td>
+                <button class="details-btn" onclick="toggleDetails(${index})">Xem Thêm</button>
+                <a href="/admin/updatePhong?id=${room.roomID}" class="btn btn-sm btn-warning update-btn">Cập nhật</a>
+                <button class="btn btn-sm btn-danger delete-btn" onclick="confirmDeleteRoom(${room.roomID})">Xóa</button>
+            </td>
         `;
         tableBody.appendChild(row);
 
@@ -163,6 +199,27 @@ function displayRooms(data) {
     });
 }
 
+async function confirmDeleteRoom(roomID) {
+    const confirmation = confirm("Bạn có chắc chắn muốn xóa phòng này?");
+    if (!confirmation) return;
+
+    try {
+        const response = await fetch(`/api/Room/Delete/${roomID}`, { method: 'DELETE' });
+        if (response.ok) {
+            alert("Phòng đã được xóa thành công!");
+            fetchRooms(); // Tải lại danh sách phòng sau khi xóa
+        } else {
+            const error = await response.json();
+            alert(`Xóa phòng thất bại: ${error.message || "Vui lòng thử lại."}`);
+        }
+    } catch (error) {
+        alert("Lỗi mạng. Vui lòng thử lại.");
+        console.error("Error deleting room:", error);
+    }
+}
+
+
+
 function toggleDetails(index) {
     const detailsRow = document.getElementById(`details-${index}`);
     if (detailsRow.style.display === 'none') {
@@ -185,6 +242,7 @@ function searchRooms() {
 
 document.addEventListener('DOMContentLoaded', () => {
     fetchRooms();
+    fetchRoomTypes();
 
     // Add the search bar at the top of the section
     const searchContainer = document.createElement('div');

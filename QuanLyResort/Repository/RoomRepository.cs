@@ -134,25 +134,42 @@ namespace QuanLyResort.Repository
             {
                 CommandType = CommandType.StoredProcedure
             };
+
+            // Add parameters
             command.Parameters.AddWithValue("@RoomID", roomId);
-            command.Parameters.Add("@StatusCode", SqlDbType.Int).Direction = ParameterDirection.Output;
-            command.Parameters.Add("@Message", SqlDbType.NVarChar, 255).Direction = ParameterDirection.Output;
+            var statusCodeParam = command.Parameters.Add("@StatusCode", SqlDbType.Int);
+            statusCodeParam.Direction = ParameterDirection.Output;
+
+            var messageParam = command.Parameters.Add("@Message", SqlDbType.NVarChar, 255);
+            messageParam.Direction = ParameterDirection.Output;
 
             try
             {
+                // Open connection and execute command
                 await connection.OpenAsync();
                 await command.ExecuteNonQueryAsync();
+
+                // Retrieve output parameter values
+                int statusCode = (int)statusCodeParam.Value;
+                string message = (string)messageParam.Value;
+
+                // Create response DTO based on the status code
                 return new DeleteRoomResponseDTO
                 {
-                    IsDeleted = (int)command.Parameters["@StatusCode"].Value == 0,
-                    Message = (string)command.Parameters["@Message"].Value
+                    IsDeleted = statusCode == 0, // Success if StatusCode is 0
+                    Message = message
                 };
+            }
+            catch (SqlException sqlEx)
+            {
+                throw new Exception($"Database error while deleting room: {sqlEx.Message}", sqlEx);
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error deleting room: {ex.Message}", ex);
+                throw new Exception($"Unexpected error while deleting room: {ex.Message}", ex);
             }
         }
+
 
         public async Task<RoomDetailsResponseDTO> GetRoomByIdAsync(int roomId)
         {

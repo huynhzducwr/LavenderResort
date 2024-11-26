@@ -50,10 +50,73 @@ function displayRoomTypes() {
             <td>${roomType.description}</td>
             <td>${roomType.accessibilityFeatures}</td>
             <td>${roomType.isActive ? 'Active' : 'Inactive'}</td>
+       <td>
+    <div class="btn-group">
+        <a href="/admin/updateRoomType?id=${roomType.roomTypeID}" class="btn btn-sm btn-warning">Cập nhật</a>
+        <button class="btn btn-sm btn-danger" onclick="deleteRoomType(${roomType.roomTypeID})">Xóa</button>
+    </div>
+</td>
+        <style>
+        /* Align the buttons in the same row */
+.table td .btn-group {
+    display: flex;
+    gap: 10px; /* Space between buttons */
+    justify-content: center; /* Center the buttons horizontally */
+}
+
+/* Styling for buttons */
+.table td .btn {
+    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: none;
+}
+
+.table td .btn-warning {
+    background-color: #ffc107;
+    color: white;
+}
+
+.table td .btn-warning:hover {
+    background-color: #e0a800;
+}
+
+.table td .btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.table td .btn-danger:hover {
+    background-color: #c82333;
+}
+
+        </style>
         `;
         tableBody.appendChild(row);
     });
 }
+async function deleteRoomType(roomTypeId) {
+    if (confirm("Bạn có chắc chắn muốn xóa loại phòng này?")) {
+        try {
+            const response = await fetch(`/api/RoomType/Delete/${roomTypeId}`, {
+                method: 'DELETE',
+            });
+
+            if (response.ok) {
+                alert('Xóa loại phòng thành công!');
+                window.location.reload(); // Reload the page to reflect the changes
+            } else {
+                const error = await response.json();
+                alert(`Xóa thất bại: ${error.message || "Vui lòng kiểm tra lại."}`);
+            }
+        } catch (error) {
+            alert("Lỗi mạng. Vui lòng thử lại.");
+            console.error("Error deleting room type:", error);
+        }
+    }
+}
+
+
 
 // Update pagination controls
 function updatePaginationControls() {

@@ -334,9 +334,12 @@
                         <div class="card-body">
                             <h5 class="card-title">Danh sách kiểu phòng</h5>
 
+                            <!-- Nút thêm loại phòng -->
+                            <div class="mb-3 text-end">
+                                <button class="btn btn-primary" onclick="redirectToAddRoomType()">Thêm Loại Phòng</button>
+                            </div>
 
-
-                            <!-- Table with stripped rows -->
+                            <!-- Bảng danh sách kiểu phòng -->
                             <table class="table datatable">
                                 <thead>
                                     <tr>
@@ -345,18 +348,19 @@
                                         <th>Mô Tả</th>
                                         <th>Đặc Điểm</th>
                                         <th>Hoạt Động</th>
+                                        <th>Hành Động</th>
                                     </tr>
                                 </thead>
                                 <tbody id="user-table-body">
-                                    <!-- Data will be populated here -->
+                                    <!-- Dữ liệu sẽ được điền vào từ JavaScript -->
                                 </tbody>
                             </table>
-                            <!-- End Table with stripped rows -->
-                            <!-- Pagination Controls -->
+
+                            <!-- Điều khiển phân trang -->
                             <div id="pagination-controls">
-                                <button onclick="prevPage()">Trước</button>
+                                <button class="btn btn-secondary" onclick="prevPage()">Trước</button>
                                 <span id="page-info"></span>
-                                <button onclick="nextPage()">Sau</button>
+                                <button class="btn btn-secondary" onclick="nextPage()">Sau</button>
                             </div>
                         </div>
                     </div>
@@ -365,6 +369,12 @@
         </section>
 
 
+        <script>
+            function redirectToAddRoomType() {
+                window.location.href = '/admin/taodanhmucphong'; // Điều hướng tới trang thêm loại phòng
+            }
+
+        </script>
 
 
     </main><!-- End #main -->

@@ -313,16 +313,15 @@
         </ul>
 
     </aside><!-- End Sidebar-->
-
     <main id="main" class="main">
 
         <div class="pagetitle">
-            <h1>Data Tables</h1>
+            <h1>Lavender Resort</h1>
             <nav>
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-                    <li class="breadcrumb-item">Quản lý phòng</li>
-                    <li class="breadcrumb-item active">Phòng</li>
+                    <li class="breadcrumb-item">Quản lý dịch vụ</li>
+                    <li class="breadcrumb-item active">Thêm dịch vụ</li>
                 </ol>
             </nav>
         </div><!-- End Page Title -->
@@ -331,49 +330,50 @@
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title">Danh sách các phòng</h5>
-                            <div class="mb-3 text-end">
-                                <button class="btn btn-primary" onclick="redirectToCreateRoom()">Tạo Phòng</button>
-                            </div>
+                            <h5 class="card-title">Cập nhật dịch vụ</h5>
 
-                            <!-- Search Bar -->
-                            <!-- Table with stripped rows -->
-                            <table class="table datatable">
-                                <thead>
-                                    <tr>
-                                        <th>Số Phòng</th>
-                                        <th>Loại Phòng</th>
-                                        <th>Kích Thước</th>
-                                        <th>Loại Giường</th>
-                                        <th>Số Người</th>
-                                        <th>Giá</th>
-                                        <th>Trạng Thái</th>
-                                        <th>Chi Tiết</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="room-table-body">
-                                    <!-- Data will be populated here -->
-                                </tbody>
-                            </table>
-                            <!-- End Table with stripped rows -->
-                            <!-- Pagination Controls -->
-                            <div id="pagination-controls">
-                                <button onclick="prevPage()">Trước</button>
-                                <span id="page-info"></span>
-                                <button onclick="nextPage()">Sau</button>
-                            </div>
+                            <!-- Form to update a service -->
+                            <form id="updateServiceForm" class="row g-3">
+                                <!-- Service Name -->
+                                <div class="col-md-6">
+                                    <label for="serviceNameInput" class="form-label">Tên Dịch Vụ</label>
+                                    <input type="text" id="serviceNameInput" class="form-control" placeholder="Tên Dịch Vụ" required>
+                                </div>
+
+                                <!-- Description 1 -->
+                                <div class="col-md-12">
+                                    <label for="description1Input" class="form-label">Mô Tả 1</label>
+                                    <textarea id="description1Input" class="form-control" placeholder="Mô Tả 1" rows="3" required></textarea>
+                                </div>
+
+                                <!-- Description 2 -->
+                                <div class="col-md-12">
+                                    <label for="description2Input" class="form-label">Mô Tả 2</label>
+                                    <textarea id="description2Input" class="form-control" placeholder="Mô Tả 2" rows="3" required></textarea>
+                                </div>
+
+                                <!-- Description 3 -->
+                                <div class="col-md-12">
+                                    <label for="description3Input" class="form-label">Mô Tả 3</label>
+                                    <textarea id="description3Input" class="form-control" placeholder="Mô Tả 3" rows="3" required></textarea>
+                                </div>
+
+                                <!-- Buttons -->
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary">Cập nhật Dịch Vụ</button>
+                                    <button type="reset" class="btn btn-secondary">Làm Mới</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <script>
-            // Hàm chuyển hướng đến trang Tạo Phòng
-            function redirectToCreateRoom() {
-                window.location.href = '/admin/taophong';
-            }
-        </script>
+
+
+
+
 
     </main><!-- End #main -->
     <!-- ======= Footer ======= -->
@@ -404,7 +404,7 @@
 
     <!-- Template Main JS File -->
     <script src="/assets/js/main.js"></script>
-        <script src="/js/qlroom.js"></script>
+    <script src="/js/updatedichvu.js"></script>
 
 </body>
 

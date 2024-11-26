@@ -36,6 +36,86 @@
     * Author: BootstrapMade.com
     * License: https://bootstrapmade.com/license/
     ======================================================== -->
+    <style>
+        #revenue-summary {
+            font-size: 16px;
+            color: #333;
+            background-color: #f8f8f8;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+            #revenue-summary h5 {
+                margin-bottom: 10px;
+                font-size: 18px;
+                font-weight: bold;
+                color: #007bff;
+            }
+
+        button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+            button:hover {
+                background-color: #218838;
+            }
+        #service-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+            #service-modal .modal-content {
+                background-color: white;
+                padding: 20px;
+                border-radius: 8px;
+                width: 80%; /* Increase the width of the modal */
+                max-width: 900px; /* Optional: Set a max width to prevent it from becoming too large on wide screens */
+                position: relative;
+                overflow-y: auto; /* Allow scrolling if the content is too long */
+            }
+
+            #service-modal .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+                #service-modal .modal-header h3 {
+                    margin: 0;
+                }
+
+                #service-modal .modal-header span {
+                    cursor: pointer;
+                    font-size: 20px;
+                }
+
+            #service-modal .modal-body {
+                max-height: 80vh; /* Optional: limit height for scrolling content */
+                overflow-y: auto;
+            }
+
+            #service-modal p {
+                line-height: 1.6;
+                margin-bottom: 10px;
+            }
+
+     
+
+    </style>
 </head>
 
 <body>
@@ -240,7 +320,7 @@
                     </li>
 
                 </ul>
-            </li><!-- End Charts Nav --><!-- End Charts Nav -->
+            </li>
 
             <li class="nav-item">
                 <a class="nav-link collapsed" data-bs-target="#icons-nav" data-bs-toggle="collapse" href="#">
@@ -317,63 +397,87 @@
     <main id="main" class="main">
 
         <div class="pagetitle">
-            <h1>Data Tables</h1>
+            <h1>Danh sách dịch vụ</h1>
             <nav>
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-                    <li class="breadcrumb-item">Quản lý phòng</li>
-                    <li class="breadcrumb-item active">Phòng</li>
+                    <li class="breadcrumb-item">Quản lý dịch vụ</li>
+                    <li class="breadcrumb-item active">Danh sách dịch vụ</li>
                 </ol>
             </nav>
         </div><!-- End Page Title -->
+
         <section class="section">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title">Danh sách các phòng</h5>
+                            <h5 class="card-title">Danh sách dịch vụ</h5>
+
+                            <!-- Add Service Button -->
                             <div class="mb-3 text-end">
-                                <button class="btn btn-primary" onclick="redirectToCreateRoom()">Tạo Phòng</button>
+                                <button class="btn btn-primary" onclick="redirectToAddService()">Thêm Dịch Vụ</button>
                             </div>
 
-                            <!-- Search Bar -->
+                            <!-- Search bar -->
+                            <div>
+                                <input type="text" id="search-bar" placeholder="Tìm kiếm dịch vụ..." onkeyup="searchServices()" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                            </div>
+
                             <!-- Table with stripped rows -->
                             <table class="table datatable">
                                 <thead>
                                     <tr>
-                                        <th>Số Phòng</th>
-                                        <th>Loại Phòng</th>
-                                        <th>Kích Thước</th>
-                                        <th>Loại Giường</th>
-                                        <th>Số Người</th>
-                                        <th>Giá</th>
+                                        <th>Tên dịch vụ</th>
                                         <th>Trạng Thái</th>
-                                        <th>Chi Tiết</th>
+                                        <th>Hành Động</th>
                                     </tr>
                                 </thead>
-                                <tbody id="room-table-body">
+                                <tbody id="user-table-body">
                                     <!-- Data will be populated here -->
                                 </tbody>
                             </table>
                             <!-- End Table with stripped rows -->
                             <!-- Pagination Controls -->
                             <div id="pagination-controls">
-                                <button onclick="prevPage()">Trước</button>
+                                <button class="btn btn-secondary" onclick="prevPage()">Trước</button>
                                 <span id="page-info"></span>
-                                <button onclick="nextPage()">Sau</button>
+                                <button class="btn btn-secondary" onclick="nextPage()">Sau</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
 
+            <!-- Modal content -->
+            <div id="service-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center;">
+                <div class="modal-content" style="background-color: white; padding: 20px; border-radius: 8px; width: 50%; max-width: 500px;">
+                    <span onclick="closeModal()" style="position: absolute; top: 10px; right: 10px; cursor: pointer; font-size: 20px;">&times;</span>
+                    <h3>Chi tiết dịch vụ</h3>
+                    <p><strong>Tên Dịch Vụ:</strong> <span id="modal-serviceName"></span></p>
+
+                    <!-- Displaying multiple descriptions -->
+                    <p><strong>Mô tả 1:</strong> <span id="modal-description1"></span></p>
+                    <p><strong>Mô tả 2:</strong> <span id="modal-description2"></span></p>
+                    <p><strong>Mô tả 3:</strong> <span id="modal-description3"></span></p>
+
+                    <p><strong>Trạng Thái:</strong> <span id="modal-status"></span></p>
+                </div>
+            </div>
+
+        </section>
+            
         <script>
-            // Hàm chuyển hướng đến trang Tạo Phòng
-            function redirectToCreateRoom() {
-                window.location.href = '/admin/taophong';
+            function redirectToAddService() {
+                window.location.href = '/admin/addService'; // Replace with the actual URL where you add services
             }
+
         </script>
+
+
+
+
+
 
     </main><!-- End #main -->
     <!-- ======= Footer ======= -->
@@ -381,13 +485,7 @@
         <div class="copyright">
             &copy; Copyright <strong><span>Lavender Resort</span></strong>. All Rights Reserved
         </div>
-        <div class="credits">
-            <!-- All the links in the footer should remain intact. -->
-            <!-- You can delete the links only if you purchased the pro version. -->
-            <!-- Licensing information: https://bootstrapmade.com/license/ -->
-            <!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/ -->
-            Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
-        </div>
+
     </footer><!-- End Footer -->
 
     <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
@@ -404,7 +502,9 @@
 
     <!-- Template Main JS File -->
     <script src="/assets/js/main.js"></script>
-        <script src="/js/qlroom.js"></script>
+    <script src="/js/qldichvu.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 
 </body>
 

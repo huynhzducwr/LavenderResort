@@ -313,16 +313,15 @@
         </ul>
 
     </aside><!-- End Sidebar-->
-
     <main id="main" class="main">
 
         <div class="pagetitle">
-            <h1>Data Tables</h1>
+            <h1>Lavender Resort</h1>
             <nav>
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="index.html">Home</a></li>
                     <li class="breadcrumb-item">Quản lý phòng</li>
-                    <li class="breadcrumb-item active">Phòng</li>
+                    <li class="breadcrumb-item active">Tạo phòng</li>
                 </ol>
             </nav>
         </div><!-- End Page Title -->
@@ -331,49 +330,128 @@
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title">Danh sách các phòng</h5>
-                            <div class="mb-3 text-end">
-                                <button class="btn btn-primary" onclick="redirectToCreateRoom()">Tạo Phòng</button>
-                            </div>
+                            <h5 class="card-title">Thêm Phòng</h5>
 
-                            <!-- Search Bar -->
-                            <!-- Table with stripped rows -->
-                            <table class="table datatable">
-                                <thead>
-                                    <tr>
-                                        <th>Số Phòng</th>
-                                        <th>Loại Phòng</th>
-                                        <th>Kích Thước</th>
-                                        <th>Loại Giường</th>
-                                        <th>Số Người</th>
-                                        <th>Giá</th>
-                                        <th>Trạng Thái</th>
-                                        <th>Chi Tiết</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="room-table-body">
-                                    <!-- Data will be populated here -->
-                                </tbody>
-                            </table>
-                            <!-- End Table with stripped rows -->
-                            <!-- Pagination Controls -->
-                            <div id="pagination-controls">
-                                <button onclick="prevPage()">Trước</button>
-                                <span id="page-info"></span>
-                                <button onclick="nextPage()">Sau</button>
-                            </div>
+                            <!-- Form -->
+                            <form id="addRoomForm" class="row g-3">
+                                <!-- Room Number -->
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" placeholder="Số Phòng" required>
+                                </div>
+
+                                <!-- Room Type -->
+                                <div class="col-md-6">
+                                    <select id="roomTypeDropdown" class="form-select" required>
+                                        <option value="" disabled selected>Chọn Kiểu Phòng</option>
+                                        <!-- Options will be populated dynamically -->
+                                    </select>
+                                </div>
+
+                                <!-- Price -->
+                                <div class="col-md-6">
+                                    <input type="number" class="form-control" placeholder="Giá" step="0.01" min="0" required>
+                                </div>
+
+                                <!-- Bed Type -->
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" placeholder="Kiểu Giường" required>
+                                </div>
+
+                                <!-- Room Size -->
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" placeholder="Diện Tích Phòng" required>
+                                </div>
+
+                                <!-- View Type -->
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" placeholder="View Phòng" required>
+                                </div>
+
+                                <!-- Dropdown Fields -->
+                                <div class="col-md-6">
+                                    <select id="wifiDropdown" class="form-select" required>
+                                        <option value="" disabled selected>Wifi</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <select id="breakfastDropdown" class="form-select" required>
+                                        <option value="" disabled selected>Bữa Sáng</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <select id="cableTVDropdown" class="form-select" required>
+                                        <option value="" disabled selected>TV</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <select id="transitCarDropdown" class="form-select" required>
+                                        <option value="" disabled selected>Dịch Vụ Xe Đưa Đón</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <select id="bathtubDropdown" class="form-select" required>
+                                        <option value="" disabled selected>Bồn Tắm</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <select id="petsAllowedDropdown" class="form-select" required>
+                                        <option value="" disabled selected>Cho Phép Thú Cưng</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <select id="roomServiceDropdown" class="form-select" required>
+                                        <option value="" disabled selected>Dịch Vụ Phòng</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <select id="ironDropdown" class="form-select" required>
+                                        <option value="" disabled selected>Bàn Là</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                </div>
+
+                                <!-- Status -->
+                                <div class="col-md-6">
+                                    <select id="statusDropdown" class="form-select" required>
+                                        <option value="" disabled selected>Chọn Trạng Thái</option>
+                                        <option value="Available">Available</option>
+                                        <option value="Occupied">Occupied</option>
+                                    </select>
+                                </div>
+
+                                <!-- People -->
+                                <div class="col-md-6">
+                                    <input type="number" id="peopleInput" class="form-control" placeholder="Số Người" min="0" required>
+                                </div>
+
+                                <!-- Buttons -->
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary">Thêm Phòng</button>
+                                    <button type="reset" class="btn btn-secondary">Làm Mới</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <script>
-            // Hàm chuyển hướng đến trang Tạo Phòng
-            function redirectToCreateRoom() {
-                window.location.href = '/admin/taophong';
-            }
-        </script>
+
 
     </main><!-- End #main -->
     <!-- ======= Footer ======= -->
@@ -404,7 +482,7 @@
 
     <!-- Template Main JS File -->
     <script src="/assets/js/main.js"></script>
-        <script src="/js/qlroom.js"></script>
+    <script src="/js/taophong.js"></script>
 
 </body>
 
